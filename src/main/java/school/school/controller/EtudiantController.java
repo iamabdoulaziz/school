@@ -3,6 +3,7 @@ package school.school.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import school.school.dto.EtudiantConnexionDTO;
 import school.school.dto.EtudiantInscriptionDTO;
 import school.school.dto.EtudiantReponseDTO;
 import school.school.serviceface.EtudiantServiceInterface;
@@ -46,5 +47,11 @@ public class EtudiantController {
     public ResponseEntity<Void> supprimerEdutiant(@PathVariable Long id){
         etudiantService.deleteEtudiant(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/connexion")
+    public ResponseEntity<EtudiantReponseDTO> login(@RequestBody EtudiantConnexionDTO dto){
+        EtudiantReponseDTO reponse = etudiantService.connecter(dto);
+        return new ResponseEntity<>(reponse, HttpStatus.OK);
     }
 }
