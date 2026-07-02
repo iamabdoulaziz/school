@@ -90,7 +90,19 @@ public class EtudiantServiceImple implements EtudiantServiceInterface {
     @Override
     public EtudiantReponseDTO connecter(EtudiantConnexionDTO dto) {
         // 1. On cherche l'étudiant en base via son email
-        Optional<Etudiant> etudiant = etudiantRepository.findByEmail(dto.getEmail());
-        return null;
+        Etudiant etudiant = etudiantRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new RuntimeException("Email ou mot de passe incorrect !"));
+
+        // 2. On vérifie si le mot de passe correspond
+
+        if (!etudiant.getPassword().equals(dto.getPassword())){
+            throw new RuntimeException("Email ou mot de passe incorrect !");
+        }
+        // 3. Si tout est correct, on convertit l'étudiant en DTO de réponse pour le connecter
+
+        EtudiantReponseDTO reponse = new EtudiantReponseDTO();
+        reponse.setId(etudiant.getId());
+        reponse.setNom(etudiant.getNom());
+        reponse.setEmail(etudiant.getEmail());
+        return reponse;
     }
 }
