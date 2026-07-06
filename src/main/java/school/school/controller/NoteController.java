@@ -2,6 +2,7 @@ package school.school.controller;
 
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,8 +22,9 @@ public class NoteController {
         this.noteService = noteService;
     }
     // Route permettant à l'étudiant connecté de voir ses notes
-    // GET http://localhost:8080/api/notes/mes-notes
+    // GET http://localhost:8080/api/notes
     @GetMapping
+    @PreAuthorize("hasAuthority('ETUDIANT') or hasAuthority('ENSEIGNANT')")
     public ResponseEntity<List<NoteReponseDTO>> obtenirMesNotes(){
         // On demande au service d'aller récupérer les notes
         List<NoteReponseDTO> notes = noteService.getMesNotes();

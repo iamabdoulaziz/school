@@ -8,4 +8,5 @@ public class EtudiantReponseDTO {
     private Long id;
     private String nom;
     private String email;
+    private String token;
 }

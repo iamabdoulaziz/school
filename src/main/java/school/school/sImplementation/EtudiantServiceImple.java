@@ -1,11 +1,17 @@
 package school.school.sImplementation;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import school.school.dto.EtudiantConnexionDTO;
 import school.school.dto.EtudiantInscriptionDTO;
 import school.school.dto.EtudiantReponseDTO;
 import school.school.model.Etudiant;
 import school.school.repository.EtudiantRepository;
+import school.school.security.JwtUtils;
 import school.school.serviceface.EtudiantServiceInterface;
 
 import java.util.ArrayList;
@@ -15,10 +21,21 @@ import java.util.Optional;
 @Service
 public class EtudiantServiceImple implements EtudiantServiceInterface {
 
-    private final EtudiantRepository etudiantRepository;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtils jwtUtils;
 
-    public EtudiantServiceImple(EtudiantRepository etudiantRepository){
+    private final EtudiantRepository etudiantRepository;
+    // 1. On déclare notre outil de hachage ici
+    private final PasswordEncoder passwordEncoder;
+
+    // 2. On l'ajoute au constructeur. Spring va voir qu'il a le Bean BCryptPasswordEncoder en mémoire et va l'injecter !
+    public EtudiantServiceImple(EtudiantRepository etudiantRepository, PasswordEncoder passwordEncoder,
+                                AuthenticationManager authenticationManager,
+                                JwtUtils jwtUtils){
         this.etudiantRepository = etudiantRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtils = jwtUtils;
     }
 
     @Override
@@ -27,7 +44,11 @@ public class EtudiantServiceImple implements EtudiantServiceInterface {
         Etudiant etudiant = new Etudiant();
         etudiant.setNom(dto.getNom());
         etudiant.setEmail(dto.getEmail());
-        etudiant.setPassword(dto.getPassword());
+
+        // 3. C'EST ICI QUE CA CHANGE !
+        // Au lieu de stocker "1234" en clair, on passe le mot de passe dans l'algorithme.
+        String motDepasseHache = passwordEncoder.encode(dto.getPassword());
+        etudiant.setPassword(motDepasseHache);
 
         // B. Sauvegarde : On demande au repository d'enregistrer l'étudiant dans MySQL
         // La méthode .save() renvoie l'étudiant avec son tout nouvel ID généré par MySQL
@@ -87,8 +108,14 @@ public class EtudiantServiceImple implements EtudiantServiceInterface {
         etudiantRepository.deleteById(id);
     }
 
+
+    // Gère la connexion d'un étudiant et retourne un Token JWT si les identifiants sont bons
     @Override
     public EtudiantReponseDTO connecter(EtudiantConnexionDTO dto) {
+       /*
+       Dans la première version de mon code je faisais la verification de l'email et du mot de passe manuellement maintenant
+       c'est spring Security qui gère raison pour laquelle cette partie de mon code est en commentaire!!
+
         // 1. On cherche l'étudiant en base via son email
         Etudiant etudiant = etudiantRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new RuntimeException("Email ou mot de passe incorrect !"));
 
@@ -99,10 +126,40 @@ public class EtudiantServiceImple implements EtudiantServiceInterface {
         }
         // 3. Si tout est correct, on convertit l'étudiant en DTO de réponse pour le connecter
 
+//        EtudiantReponseDTO reponse = new EtudiantReponseDTO();
+//        reponse.setId(etudiant.getId());
+//        reponse.setNom(etudiant.getNom());
+//        reponse.setEmail(etudiant.getEmail());
+        return null;
+        */
+
+        try {
+            // 1. On demande à Spring Security de vérifier l'email et le mot de passe.
+            // C'est cette ligne qui va chercher l'utilisateur en BDD et valider le mot de passe crypté avec BCrypt.
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
+            );
+        } catch (AuthenticationException e) {
+            // Si le mot de passe est faux ou l'email inconnu, Spring lève une exception, et on la rattrape ici.
+            throw new RuntimeException(" Email ou mot de passe incorrect ! " + e);
+        }
+
+        // 2. Si on arrive ici, c'est que l'authentification a réussi !
+        // On va chercher l'étudiant en base pour récupérer son Id et son Nom afin de construire la réponse.
+        Etudiant etudiant = etudiantRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new RuntimeException("Erreur : Etudiant introuvable après authentification ! "));
+
+        // 3. On génère son badge d'accès JWT personnalisé
+        String monTokenJWT = jwtUtils.genererToken(etudiant.getEmail());
+
+        // 4. On remplit le DTO de réponse avec ses vraies données ET le token généré
         EtudiantReponseDTO reponse = new EtudiantReponseDTO();
         reponse.setId(etudiant.getId());
         reponse.setNom(etudiant.getNom());
         reponse.setEmail(etudiant.getEmail());
+        reponse.setToken(monTokenJWT); // On lui donne son token
+
         return reponse;
     }
+
 }
