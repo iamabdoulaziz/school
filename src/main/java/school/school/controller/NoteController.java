@@ -24,7 +24,7 @@ public class NoteController {
     // Route permettant à l'étudiant connecté de voir ses notes
     // GET http://localhost:8080/api/notes
     @GetMapping
-    @PreAuthorize("hasAuthority('ETUDIANT') or hasAuthority('ENSEIGNANT')")
+    @PreAuthorize("hasRole('ETUDIANT')")
     public ResponseEntity<List<NoteReponseDTO>> obtenirMesNotes(){
         // On demande au service d'aller récupérer les notes
         List<NoteReponseDTO> notes = noteService.getMesNotes();

@@ -17,7 +17,7 @@ public class JwtUtils {
         return Jwts.builder()
                 .subject(email) // On stocke l'email au cœur du jeton (anciennement setSubject)
                 .issuedAt(new Date()) // Date de création (aujourd'hui, maintenant)
-                .expiration(new Date(System.currentTimeMillis() + 100*60*60*24)) // Expire dans 24 heures
+                .expiration(new Date(System.currentTimeMillis() + 1000*60*60*24)) // Expire dans 24 heures
                 .signWith(cleSecrete) // Signature électronique pour empêcher toute falsification
                 .compact(); // Assemble le tout en une chaîne de caractères (le Token)
     }

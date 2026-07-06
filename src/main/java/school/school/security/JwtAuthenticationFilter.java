@@ -32,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String email = null;
 
         // 2. Le token est TOUJOURS précédé du mot "Bearer " (Porteur du jeton)
-        if(authHeader != null && authHeader.startsWith("Berear")){
+        if(authHeader != null && authHeader.startsWith("Bearer ")){
             token = authHeader.substring(7); // On coupe les 7 premiers caractères pour garder UNIQUEMENT le token
             email = jwtUtils.extraireEmail(token); // On extrait l'email avec notre outil
         }

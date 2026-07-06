@@ -31,7 +31,7 @@ public class EtudiantController {
 
     // 2. Route pour tout récupérer (GET http://localhost:8080/api/etudiants)
     @GetMapping
-    @PreAuthorize("hasAuthority('ENSEIGNANT')") // SEUL un utilisateur avec le rôle ENSEIGNANT peut entrer ici !
+    @PreAuthorize("hasRole('ENSEIGNANT')") // SEUL un utilisateur avec le rôle ENSEIGNANT peut entrer ici !
     public ResponseEntity<List<EtudiantReponseDTO>> recupererToutLesEtudiant(){
         List<EtudiantReponseDTO> list = etudiantService.getAllEtudiant();
         return ResponseEntity.ok(list);
@@ -39,7 +39,7 @@ public class EtudiantController {
 
     // 3. Route pour récupérer un étudiant par son ID (GET http://localhost:8080/api/etudiants/1)
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ENSEIGNANT') or hasAuthority('ETUDIANT')")
+    @PreAuthorize("hasRole('ETUDIANT')")
     public ResponseEntity<EtudiantReponseDTO> recupererUnEtudiant(@PathVariable Long id){
         EtudiantReponseDTO dto = etudiantService.getEtudiantByID(id);
         return ResponseEntity.ok(dto);
@@ -47,7 +47,7 @@ public class EtudiantController {
 
     // 4. Route pour supprimer un étudiant (DELETE http://localhost:8080/api/etudiants/1)
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ENSEIGNANT')")
+    @PreAuthorize("hasRole('ENSEIGNANT')")
     public ResponseEntity<Void> supprimerEdutiant(@PathVariable Long id){
         etudiantService.deleteEtudiant(id);
         return ResponseEntity.noContent().build();
