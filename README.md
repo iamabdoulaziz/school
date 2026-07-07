@@ -1,0 +1,1 @@
+Ce projet est un tp personnalisé afin de pratiquer et de comprendre le fonctionnement d'un projet Spring Boot avec Maven (JPA, Hibernate, DTO, Entité et relation(OneToMany, ManyToOne...), Repository, Service, Spring Security, JWT ...)
