@@ -2,6 +2,7 @@ package school.school.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import school.school.dto.EtudiantConnexionDTO;
 import school.school.dto.EtudiantInscriptionDTO;
@@ -30,6 +31,7 @@ public class EtudiantController {
 
     // 2. Route pour tout récupérer (GET http://localhost:8080/api/etudiants)
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ENSEIGNANT')")// SEUL un utilisateur avec le rôle ADMIN peut entrer ici !
     public ResponseEntity<List<EtudiantReponseDTO>> recupererToutLesEtudiant(){
         List<EtudiantReponseDTO> list = etudiantService.getAllEtudiant();
         return ResponseEntity.ok(list);
@@ -37,6 +39,7 @@ public class EtudiantController {
 
     // 3. Route pour récupérer un étudiant par son ID (GET http://localhost:8080/api/etudiants/1)
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ENSEIGNANT')")// SEUL un utilisateur avec le rôle ADMIN peut entrer ici !
     public ResponseEntity<EtudiantReponseDTO> recupererUnEtudiant(@PathVariable Long id){
         EtudiantReponseDTO dto = etudiantService.getEtudiantByID(id);
         return ResponseEntity.ok(dto);
@@ -44,6 +47,7 @@ public class EtudiantController {
 
     // 4. Route pour supprimer un étudiant (DELETE http://localhost:8080/api/etudiants/1)
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN' or hasRole('ENSEIGNANT'))")// SEUL un utilisateur avec le rôle ADMIN peut entrer ici !
     public ResponseEntity<Void> supprimerEdutiant(@PathVariable Long id){
         etudiantService.deleteEtudiant(id);
         return ResponseEntity.noContent().build();

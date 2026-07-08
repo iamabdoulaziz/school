@@ -3,7 +3,7 @@ package school.school.serviceface;
 import school.school.dto.EtudiantConnexionDTO;
 import school.school.dto.EtudiantInscriptionDTO;
 import school.school.dto.EtudiantReponseDTO;
-import school.school.model.Etudiant;
+
 
 import java.util.List;
 

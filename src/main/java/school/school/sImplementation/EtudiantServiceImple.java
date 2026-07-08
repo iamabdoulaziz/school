@@ -1,5 +1,6 @@
 package school.school.sImplementation;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import school.school.dto.EtudiantConnexionDTO;
 import school.school.dto.EtudiantInscriptionDTO;
@@ -10,15 +11,19 @@ import school.school.serviceface.EtudiantServiceInterface;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class EtudiantServiceImple implements EtudiantServiceInterface {
 
     private final EtudiantRepository etudiantRepository;
 
-    public EtudiantServiceImple(EtudiantRepository etudiantRepository){
+    // 1. On déclare notre outil de hachage ici
+    private final PasswordEncoder passwordEncoder;
+
+    // 2. On l'ajoute au constructeur. Spring va voir qu'il a le Bean BCryptPasswordEncoder en mémoire et va l'injecter !
+    public EtudiantServiceImple(EtudiantRepository etudiantRepository, PasswordEncoder passwordEncoder){
         this.etudiantRepository = etudiantRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -27,7 +32,11 @@ public class EtudiantServiceImple implements EtudiantServiceInterface {
         Etudiant etudiant = new Etudiant();
         etudiant.setNom(dto.getNom());
         etudiant.setEmail(dto.getEmail());
-        etudiant.setPassword(dto.getPassword());
+
+        // Au lieu de stocker "1234" en clair, on passe le mot de passe dans l'algorithme.
+        // Ça va donner une chaîne bizarre impossible à décoder du genre : $2a$10$vX9Bux...
+        String motDePasseHache = passwordEncoder.encode(dto.getPassword());
+        etudiant.setPassword(motDePasseHache);
 
         // B. Sauvegarde : On demande au repository d'enregistrer l'étudiant dans MySQL
         // La méthode .save() renvoie l'étudiant avec son tout nouvel ID généré par MySQL
@@ -89,20 +98,20 @@ public class EtudiantServiceImple implements EtudiantServiceInterface {
 
     @Override
     public EtudiantReponseDTO connecter(EtudiantConnexionDTO dto) {
-        // 1. On cherche l'étudiant en base via son email
-        Etudiant etudiant = etudiantRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new RuntimeException("Email ou mot de passe incorrect !"));
+        // // 1. On cherche l'étudiant en base via son email
+        // Etudiant etudiant = etudiantRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new RuntimeException("Email ou mot de passe incorrect !"));
 
-        // 2. On vérifie si le mot de passe correspond
+        // // 2. On vérifie si le mot de passe correspond
 
-        if (!etudiant.getPassword().equals(dto.getPassword())){
-            throw new RuntimeException("Email ou mot de passe incorrect !");
-        }
-        // 3. Si tout est correct, on convertit l'étudiant en DTO de réponse pour le connecter
+        // if (!etudiant.getPassword().equals(dto.getPassword())){
+        //     throw new RuntimeException("Email ou mot de passe incorrect !");
+        // }
+        // // 3. Si tout est correct, on convertit l'étudiant en DTO de réponse pour le connecter
 
-        EtudiantReponseDTO reponse = new EtudiantReponseDTO();
-        reponse.setId(etudiant.getId());
-        reponse.setNom(etudiant.getNom());
-        reponse.setEmail(etudiant.getEmail());
-        return reponse;
+        // EtudiantReponseDTO reponse = new EtudiantReponseDTO();
+        // reponse.setId(etudiant.getId());
+        // reponse.setNom(etudiant.getNom());
+        // reponse.setEmail(etudiant.getEmail());
+        return null;
     }
 }
